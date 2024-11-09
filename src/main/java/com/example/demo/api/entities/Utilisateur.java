@@ -20,7 +20,7 @@ public abstract class Utilisateur {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     private Long id;
-    
+
     @NotNull(message = "Le nom est obligatoire")
     @Column(length = 50)
     private String nom;
