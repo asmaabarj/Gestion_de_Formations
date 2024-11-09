@@ -6,11 +6,11 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import com.example.demo.api.entities.Formateur;
 import com.example.demo.api.entities.dto.ClassDto;
+import com.example.demo.api.exceptions.ResourceNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import com.example.demo.api.entities.Classe;
 import com.example.demo.api.services.interfaces.ClasseService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/classes")
 @RequiredArgsConstructor
@@ -45,13 +46,13 @@ public class ClasseController {
     @ApiResponse(responseCode = "200", description = "Liste de toutes les classes", content = @Content(schema = @Schema(implementation = ClassDto.class)))
     @GetMapping
     public List<ClassDto> getAllClasses() {
-       // try {
+        try {
             List<ClassDto> getAllClass = classeService.getAllClasses();
             return getAllClass.stream().collect(Collectors.toList());
-//        } catch (ClasseNotFoundException e) {
-//            log.error("Classe non trouvée avec l'ID: {}", e.getClass());
-//            throw e;
-//        }
+       } catch (ResourceNotFoundException e) {
+            log.error("Classe non trouvée avec l'ID: {}", e.getClass());
+           throw e;
+       }
     }
     @Operation(summary = "Obtenir une classe par ID")
     @ApiResponses(value = {
@@ -60,14 +61,14 @@ public class ClasseController {
     })
     @GetMapping("/{id}")
     public ClassDto getClasseById(@PathVariable Long id) {
-      //  try {
+        try {
             return classeService.getClasseById(id)
                     .map(ClassDto::FindById)
                     .orElse(null);
-       // } catch (ClasseNotFoundException e) {
-       //     log.error("Classe non trouvée avec l'ID: {}", id);
-        //    throw e;
-        //}
+       } catch (ResourceNotFoundException e) {
+            log.error("Classe non trouvée avec l'ID: {}", id);
+            throw e;
+       }
     }
 
 
@@ -86,11 +87,11 @@ public class ClasseController {
             classes.setId(id);
             System.out.println(id);
           classeService.updateClasse(classes);
-         //   log.info("Classe mise à jour avec succès : {}", updatedClasse);
+            log.info("Classe mise à jour avec succès : {}");
 
         } else {
-         //   log.error("Aucune classe trouvée avec le numéro de CLASS: {}", id);
-         //   throw new ClasseNotFoundException("Aucune classe trouvée avec le numéro de CLASS: " + id);
+            log.error("Aucune classe trouvée avec le numéro de CLASS: {}", id);
+           throw new ResourceNotFoundException("Aucune classe trouvée avec le numéro de CLASS: " + id);
         }
     }
 
@@ -129,10 +130,10 @@ public class ClasseController {
     public List<ClassDto> searchByNumSalle(@PathVariable int numSalle) {
         List<ClassDto> classes = classeService.searchByNumSalle(numSalle);
         if (classes == null || classes.isEmpty()) {
-         //   log.info("Aucune classe trouvée avec le numéro de salle: {}", numSalle);
-         //   throw new ClasseNotFoundException("Aucune classe trouvée avec le numéro de salle: " + numSalle);
+            log.info("Aucune classe trouvée avec le numéro de salle: {}", numSalle);
+            throw new ResourceNotFoundException("Aucune classe trouvée avec le numéro de salle: " + numSalle);
         }
-     //   log.info("Classes trouvées avec le numéro de salle {}: {}", numSalle, classes.size());
+        log.info("Classes trouvées avec le numéro de salle {}: {}", numSalle, classes.size());
         return classes;
     }
 }

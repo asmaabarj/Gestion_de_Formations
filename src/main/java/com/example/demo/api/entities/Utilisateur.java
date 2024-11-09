@@ -7,6 +7,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 
@@ -30,6 +31,7 @@ public abstract class Utilisateur {
     private String prenom;
     
     @NotNull(message = "L'email doit être valide")
+    @Email
     @Column(unique = true)
     private String email;
 }

@@ -3,9 +3,12 @@ package com.example.demo.api.controllers;
 
 import com.example.demo.api.entities.Formation;
 import com.example.demo.api.entities.dto.FormationDto;
+import com.example.demo.api.exceptions.ResourceNotFoundException;
+import com.example.demo.api.exceptions.SuccesRequestException;
 import com.example.demo.api.services.impl.FormationServiceImpl;
 import com.example.demo.api.utils.PageResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/formations")
 @RequiredArgsConstructor
@@ -37,9 +42,9 @@ private final  FormationServiceImpl formationServices;
     })
     @PostMapping
     public Formation createFormation(@Valid @RequestBody Formation formation) {
-        //log.info("Création d'une nouvelle formation : {}", formation);
+        log.info("Création d'une nouvelle formation : {}", formation);
         Formation createdFormation = formationServices.createFormateur(formation);
-        //log.info("Formation créée avec succès : {}", createdFormation);
+        log.info("Formation créée avec succès : {}", createdFormation);
         return createdFormation;
     }
 
@@ -58,14 +63,14 @@ private final  FormationServiceImpl formationServices;
     })
     @GetMapping("/{id}")
     public FormationDto getFormationById(@PathVariable Long id) {
-      //  try {
+        try {
             return formationServices.getById(id)
                     .map(FormationDto::findById)
                    .orElse(null);
-//        } catch (ClasseNotFoundException e) {
-//            log.error("Formation non trouvée avec l'ID: {}", id);
-//            throw e;
-//        }
+        } catch (ResourceNotFoundException e) {
+            log.error("Formation non trouvée avec l'ID: {}", id);
+            throw e;
+        }
     }
 
     @Operation(summary = "Mettre à jour une formation")
@@ -81,10 +86,10 @@ private final  FormationServiceImpl formationServices;
         if (check.isPresent()) {
             formation.setId(id);
             formationServices.updateFormateur(formation);
-          //  throw new ClassSucesseExption("Formation Moidfier avec succès : " + id);
+            throw new SuccesRequestException("Formation Moidfier avec succès : " + id);
 
         } else {
-       //     throw new ClasseNotFoundException("Aucune formation trouvée avec l'ID: " + id);
+            throw new ResourceNotFoundException("Aucune formation trouvée avec l'ID: " + id);
         }
     }
 
@@ -99,10 +104,10 @@ private final  FormationServiceImpl formationServices;
         Optional<Formation> check = formationServices.getById(id);
         if (check.isPresent()) {
             formationServices.deleteFormation(id);
-          //  log.info("Formation supprimée avec succès : {}", id);
-        //    throw new ClassSucesseExption("Formation Supprimer avec succès : " + id);
+            log.info("Formation supprimée avec succès : {}", id);
+            throw new SuccesRequestException("Formation Supprimer avec succès : " + id);
         } else {
-         //   throw new ClasseNotFoundException("Aucune formation trouvée avec l'ID: " + id);
+            throw new ResourceNotFoundException("Aucune formation trouvée avec l'ID: " + id);
         }
     }
 
@@ -115,7 +120,7 @@ private final  FormationServiceImpl formationServices;
     public List<FormationDto> searchFormations(@PathVariable String nom) {
         List<FormationDto> formations = formationServices.searchByName(nom);
         if (formations == null || formations.isEmpty()) {
-          //  throw new ClasseNotFoundException("Aucune formation trouvée avec le nom: " + nom);
+            throw new ResourceNotFoundException("Aucune formation trouvée avec le nom: " + nom);
         }
         return formations;
     }

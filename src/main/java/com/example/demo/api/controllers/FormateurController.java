@@ -3,6 +3,8 @@ package com.example.demo.api.controllers;
 
 import com.example.demo.api.entities.Formateur;
 import com.example.demo.api.entities.dto.FormateurDto;
+import com.example.demo.api.exceptions.ResourceNotFoundException;
+import com.example.demo.api.exceptions.SuccesRequestException;
 import com.example.demo.api.services.impl.FormateurServiceImpl;
 import com.example.demo.api.utils.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +24,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/formateurs")
 @RequiredArgsConstructor
@@ -29,9 +33,9 @@ public class FormateurController {
 
     @PostMapping
     public Formateur createFormateur(@Valid @RequestBody Formateur formateur){
-//        log.info("Création d'une nouvelle Formateur : {}", formateur);
+        log.info("Création d'une nouvelle Formateur : {}", formateur);
         Formateur createdFormateur = formateurService.createFormateur(formateur);
-//        log.info("Formateur créée avec succès : {}", createdFormateur);
+        log.info("Formateur créée avec succès : {}", createdFormateur);
         return createdFormateur;
     }
 
@@ -39,19 +43,19 @@ public class FormateurController {
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void updateFormateur(@PathVariable Long id, @Valid @RequestBody Formateur formateur) {
-//        try {
+        try {
             Optional<Formateur> check = formateurService.getById(id);
             if (check.isPresent()) {
                 formateur.setId(id);
-//                log.info("Mise à jour du formateur avec l'ID : {}", id);
+               log.info("Mise à jour du formateur avec l'ID : {}", id);
                 formateurService.updateFormateur(formateur);
-//                throw new ClassSucesseExption("formateur update avec succès : " + id);
+                throw new SuccesRequestException("formateur update avec succès : " + id);
 
-//            } else {
-//                throw new ClasseNotFoundException("Aucun formateur trouvé avec l'ID : " + id);
-//            }
-//        } catch (ClasseNotFoundException e) {
-//            throw new ClasseNotFoundException("Erreur lors de la mise à jour : corps de la requête manquant ou invalide");
+            } else {
+                throw new ResourceNotFoundException("Aucun formateur trouvé avec l'ID : " + id);
+            }
+        } catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException("Erreur lors de la mise à jour : corps de la requête manquant ou invalide");
        }
     }
     @DeleteMapping("/{id}")
@@ -59,11 +63,11 @@ public class FormateurController {
         Optional<Formateur> check= formateurService.getById(id);
         if (check.isPresent()){
             formateurService.deleteFormateur(id);
-            //log.info("formateur supprimer avec succès : {}", id);
-            //throw new ClassSucesseExption("Formateur Supprimer avec succès : " + id);
+            log.info("formateur supprimer avec succès : {}", id);
+            throw new SuccesRequestException("Formateur Supprimer avec succès : " + id);
 
         }else {
-            //throw new ClasseNotFoundException("Aucune Formateur trouvée avec le numéro : " + id);
+            throw new ResourceNotFoundException("Aucune Formateur trouvée avec le numéro : " + id);
 
         }
     }
@@ -78,14 +82,14 @@ public class FormateurController {
 
     @GetMapping("/{id}")
     public FormateurDto getFormateurById(@PathVariable Long id) {
-      //  try {
+        try {
             return formateurService.getById(id)
                     .map(FormateurDto::findById)
                     .orElse(null);
-      //  } catch (ClasseNotFoundException e) {
-       //     log.error("Classe non trouvée avec l'ID: {}", id);
-      //      throw e;
-       // }
+        } catch (ResourceNotFoundException e) {
+            log.error("Formateur non trouvée avec l'ID: {}", id);
+            throw e;
+        }
     }
 
     @Operation(summary = "Rechercher une formateur par numSalle de salle")
@@ -98,10 +102,10 @@ public class FormateurController {
     public List<FormateurDto> searchByNumSalle(@PathVariable String numSalle) {
         List<FormateurDto> formateurDtoList = formateurService.searchByNumSalle(numSalle);
         if (formateurDtoList == null || formateurDtoList.isEmpty()) {
-          //  log.info("Aucune formateur trouvée avec le nom de salle: {}", numSalle);
-         //   throw new ClasseNotFoundException("Aucune Formateur trouvée avec le nom  salle: " + numSalle);
+            log.info("Aucune formateur trouvée avec le nom de salle: {}", numSalle);
+           throw new ResourceNotFoundException("Aucune Formateur trouvée avec le nom  salle: " + numSalle);
         }
-       // log.info("Classes trouvées avec le numéro de salle {}: {}", numSalle, formateurDtoList.size());
+        log.info("Classes trouvées avec le numéro de salle {}: {}", numSalle, formateurDtoList.size());
         return formateurDtoList;
     }
     @Operation(summary = "Obtenir les Formateurs paginées")
