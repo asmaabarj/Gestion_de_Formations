@@ -14,11 +14,10 @@ import com.example.demo.api.entities.Classe;
 
 @Repository
 public interface ClasseRepository extends JpaRepository<Classe,Long> {
-    List<Classe> findByNomAndNumSalle(String nom, int numSalle);
-    
-    @Query("SELECT c FROM Classe c WHERE c.numSalle > :minSalle")
-    List<Classe> findClassesWithSalleSuperieure(@Param("minSalle") int minSalle);
-    
-    @Query("SELECT c FROM Classe c WHERE c.nom LIKE %:searchTerm%")
-    Page<Classe> searchByNom(@Param("searchTerm") String searchTerm, Pageable pageable);
+    @Query("SELECT c FROM Classe c")
+    Page<Classe> findAllWithPagination(Pageable pageable);
+
+    @Query("SELECT c FROM Classe c WHERE CAST(c.numSalle AS string) LIKE CONCAT('%', :numSalle, '%')")
+    List<Classe> findByNumSalleContaining(@Param("numSalle") int numSalle);
+
 }

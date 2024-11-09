@@ -31,5 +31,5 @@ public class Formateur extends Utilisateur {
     private Classe classe;
     
     @OneToMany(mappedBy = "formateur", cascade = CascadeType.ALL)
-    private List<Formation> formations = new ArrayList<>();
+    private List<Formation> formations ;
 }

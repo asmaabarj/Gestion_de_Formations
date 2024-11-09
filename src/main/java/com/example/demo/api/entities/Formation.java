@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import com.example.demo.api.entities.enums.StatutFormation;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 @Data
@@ -49,9 +50,11 @@ public class Formation {
     private int capaciteMax;
     
     @Future(message = "La date de début doit être dans le futur")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateDebut;
-    
+
     @Future(message = "La date de fin doit être dans le futur")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateFin;
     
     @ManyToOne(fetch = FetchType.LAZY)
